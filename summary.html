@@ -1,0 +1,64 @@
+<!-- summary.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride Summary - Ride Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Weekly Ride Summary</h1>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Trip Type</th>
+          <th>Fare ($)</th>
+        </tr>
+      </thead>
+      <tbody id="summaryBody">
+        <!-- Rides will be loaded here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjXAc0n4Gh8OereVnXLTsywrOPQGSB08U",
+      authDomain: "ridetracker-5bace.firebaseapp.com",
+      databaseURL: "https://ridetracker-5bace-default-rtdb.firebaseio.com",
+      projectId: "ridetracker-5bace",
+      storageBucket: "ridetracker-5bace.firebasestorage.app",
+      messagingSenderId: "903250961017",
+      appId: "1:903250961017:web:7af86b799df770e5152aa8",
+      measurementId: "G-X6CGLDGYEZ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const summaryBody = document.getElementById("summaryBody");
+
+    db.ref("rides").on("value", (snapshot) => {
+      summaryBody.innerHTML = "";
+      snapshot.forEach((childSnapshot) => {
+        const ride = childSnapshot.val();
+        const row = `<tr>
+          <td>${ride.name}</td>
+          <td>${ride.date}</td>
+          <td>${ride.location}</td>
+          <td>${ride.tripType}</td>
+          <td>${ride.fare}</td>
+        </tr>`;
+        summaryBody.innerHTML += row;
+      });
+    });
+  </script>
+</body>
+</html>

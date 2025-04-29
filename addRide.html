@@ -1,0 +1,69 @@
+<!-- Project: Ride Tracker Website -->
+
+
+<!-- addRide.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Ride - Ride Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="app.js"></script>
+
+<body>
+  <div class="container">
+    <h1>Add a Ride</h1>
+    <div class="form-group">
+        <label for="newPerson">Add New Person:</label>
+        <input type="text" id="newPerson" placeholder="Enter name">
+        <button type="button" class="btn" onclick="addPerson()">Add</button>
+      </div>
+    <form id="rideForm">
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <select id="name" required>
+          <option value="">--Select Person--</option>
+          <option value="Suma">Suma</option>
+          <option value="Jakki">Jakki</option>
+          <option value="Rithin">Rithin</option>
+          <!-- Add more names as needed -->
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="date">Date:</label>
+        <input type="date" id="date" required>
+      </div>
+
+      <div class="form-group">
+        <label for="location">Location:</label>
+        <select id="location" required>
+          <option value="">--Select Location--</option>
+          <option value="Mills">Mills</option>
+          <option value="Motel">Motel</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="tripType">Trip Type:</label>
+        <select id="tripType" required>
+          <option value="">--Select Trip Type--</option>
+          <option value="One-way">One-way</option>
+          <option value="Round-trip">Round-trip</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn">Submit Ride</button>
+    </form>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
