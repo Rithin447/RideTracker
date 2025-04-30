@@ -54,9 +54,13 @@ window.onload = function () {
     } else if (location === "Motel") {
       if (tripType === "Round-trip") {
         fare = 5;
-      } else {
-        alert("Motel only supports Round-trip rides.");
-        return;
+      } else if (location === "Riverside") {
+        if (tripType === "Round-trip") {
+          fare = 8;
+        } else {
+          alert("Motel only supports Round-trip rides.");
+          return;
+        }
       }
     }
 
