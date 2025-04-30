@@ -47,6 +47,8 @@ window.onload = function () {
     const date = document.getElementById('date').value;
     const location = document.getElementById('location').value;
     const tripType = document.getElementById('tripType').value;
+    const carName = document.getElementById('carName').value;
+
 
     let fare = 0;
     if (location === "Mills") {
@@ -65,7 +67,7 @@ window.onload = function () {
     }
 
     const newRideRef = db.ref("rides").push();
-    newRideRef.set({ name, date, location, tripType, fare });
+    newRideRef.set({ name, date, location, tripType, fare, carName });
 
     document.getElementById('result').innerHTML = `
       <strong>Ride Submitted!</strong><br>
