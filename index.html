@@ -1,29 +1,60 @@
-<!-- Project: Ride Tracker Website -->
-
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ride Tracker - Home</title>
+  <title>RideTracker - Home</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<nav>
-  <div class="navbar">
-    <a id="index" href="index.html">Home</a>
-    <a id="addride" href="addRide.html">Add Ride</a>
-    <a id="summary" href="summary.html">Weekly Summary</a>
-  </div>
 <body>
-  <div class="container">
-    <h1>Welcome to the Ride Tracker</h1>
-    <div class="buttons">
-      <a href="addRide.html" class="btn">Add Ride</a>
-      <a href="summary.html" class="btn">View Weekly Summary</a>
+  <div class="navbar">
+    <div class="nav-left">
+      <a href="index.html">Home</a>
+      <a href="addRide.html">Add Ride</a>
+      <a href="summary.html">Weekly Summary</a>
+    </div>
+    <div class="nav-right">
+      <span id="welcomeMsg" style="color: white; margin-right: 20px;"></span>
+      <div class="profile-icon" onclick="toggleProfileMenu()">
+        <span id="profileInitials"></span>
+        <div id="profileMenu" class="dropdown-content">
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
     </div>
   </div>
+  
+
+  <div class="container">
+    <h1>Welcome to RideTracker</h1>
+    <p>This application helps you manage and track shared rides for your team with detailed logs and summaries.</p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="app.js"></script>
+  <script>
+    window.onload = function () {
+      const initials = localStorage.getItem('userInitials');
+      if (initials) {
+        document.getElementById('profileInitials').innerText = initials;
+      }
+    };
+
+    function toggleProfileMenu() {
+      const menu = document.getElementById("profileMenu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+    window.onload = function () {
+    const initials = localStorage.getItem("userInitials");
+    const firstName = localStorage.getItem("firstName");
+    
+    if (initials) {
+      document.getElementById("profileInitials").innerText = initials;
+    }
+    if (firstName) {
+      document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
+    }
+  };
+  </script>
 </body>
 </html>
-
-

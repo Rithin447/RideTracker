@@ -1,30 +1,40 @@
-<!-- summary.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ride Summary - Ride Tracker</title>
+  <title>Weekly Summary</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <div class="navbar">
+  <div class="navbar">
+    <div class="nav-left">
       <a href="index.html">Home</a>
       <a href="addRide.html">Add Ride</a>
       <a href="summary.html">Weekly Summary</a>
     </div>
+    <div class="nav-right">
+      <span id="welcomeMsg" style="color: white; margin-right: 20px;"></span>
+      <div class="profile-icon" onclick="toggleProfileMenu()">
+        <span id="profileInitials"></span>
+        <div id="profileMenu" class="dropdown-content">
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 
-    <h1>Weekly Ride Summary</h1>
+  <div class="container">
+    <h2>Weekly Summary</h2>
 
     <div class="form-group">
       <label>Filter by Date:</label><br>
       <input type="date" id="startDate"> to
       <input type="date" id="endDate">
       <button class="btn" onclick="filterRides()">Apply</button>
+      <button class="btn" onclick="clearTable()">Clear Table</button>
       <button class="btn" onclick="downloadPDF()">Download PDF</button>
       <button class="btn" onclick="downloadExcel()">Download Excel</button>
-      <button class="btn" onclick="clearTable()">Clear Table</button>
     </div>
 
     <table class="summary-table">
@@ -37,42 +47,31 @@
           <th>Fare ($)</th>
           <th>Car (To)</th>
           <th>Car (Return)</th>
-
         </tr>
       </thead>
-      <tbody id="summaryBody">
-        <!-- Data will be populated here -->
-      </tbody>
+      <tbody id="summaryBody"></tbody>
     </table>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+  <script src="app.js"></script>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCjXAc0n4Gh8OereVnXLTsywrOPQGSB08U",
-      authDomain: "ridetracker-5bace.firebaseapp.com",
-      databaseURL: "https://ridetracker-5bace-default-rtdb.firebaseio.com",
-      projectId: "ridetracker-5bace",
-      storageBucket: "ridetracker-5bace.firebasestorage.app",
-      messagingSenderId: "903250961017",
-      appId: "1:903250961017:web:7af86b799df770e5152aa8",
-      measurementId: "G-X6CGLDGYEZ"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
     const summaryBody = document.getElementById("summaryBody");
     let allRides = [];
 
-    function formatDate(dateStr) {
-      const [year, month, day] = dateStr.split("-");
-      return `${month}/${day}/${year}`;
-    }
+    firebase.database().ref("rides").on("value", snapshot => {
+      summaryBody.innerHTML = "";
+      allRides = [];
+      snapshot.forEach(child => {
+        const ride = child.val();
+        allRides.push(ride);
+        addRow(ride);
+      });
+    });
 
     function addRow(ride) {
       const row = `<tr>
@@ -81,23 +80,16 @@
         <td>${ride.location}</td>
         <td>${ride.tripType}</td>
         <td>${ride.fare}</td>
-        <td>${ride.carName || '-'}</td>
         <td>${ride.carTo || '-'}</td>
         <td>${ride.carReturn || '-'}</td>
-
       </tr>`;
       summaryBody.innerHTML += row;
     }
 
-    db.ref("rides").on("value", (snapshot) => {
-      summaryBody.innerHTML = "";
-      allRides = [];
-      snapshot.forEach((child) => {
-        const ride = child.val();
-        allRides.push(ride);
-        addRow(ride);
-      });
-    });
+    function formatDate(dateStr) {
+      const [year, month, day] = dateStr.split("-");
+      return `${month}/${day}/${year}`;
+    }
 
     function filterRides() {
       const start = document.getElementById("startDate").value;
@@ -120,29 +112,43 @@
       const doc = new jsPDF();
       doc.text("Weekly Ride Summary", 10, 10);
       let y = 20;
-
-      allRides.forEach((ride) => {
-        const line = `${ride.name} | ${formatDate(ride.date)} | ${ride.location} | ${ride.tripType} | $${ride.fare} | ${ride.carName || '-'}`;
+      allRides.forEach(ride => {
+        const line = `${ride.name} | ${formatDate(ride.date)} | ${ride.location} | ${ride.tripType} | $${ride.fare} | ${ride.carTo || '-'} | ${ride.carReturn || '-'}`;
         doc.text(line, 10, y);
         y += 10;
       });
-
       doc.save("RideSummary.pdf");
     }
 
     function downloadExcel() {
-      const ws = XLSX.utils.json_to_sheet(allRides.map(ride => ({
-        Name: ride.name,
-        Date: formatDate(ride.date),
-        Location: ride.location,
-        TripType: ride.tripType,
-        Fare: ride.fare,
-        Car: ride.carName || '-'
-      })));
+      const ws = XLSX.utils.json_to_sheet(allRides);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "RideSummary");
       XLSX.writeFile(wb, "RideSummary.xlsx");
     }
+
+    window.onload = function () {
+      const initials = localStorage.getItem('userInitials');
+      if (initials) {
+        document.getElementById('profileInitials').innerText = initials;
+      }
+    };
+
+    function toggleProfileMenu() {
+      const menu = document.getElementById("profileMenu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+    window.onload = function () {
+    const initials = localStorage.getItem("userInitials");
+    const firstName = localStorage.getItem("firstName");
+    
+    if (initials) {
+      document.getElementById("profileInitials").innerText = initials;
+    }
+    if (firstName) {
+      document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
+    }
+  };
   </script>
 </body>
 </html>

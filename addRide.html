@@ -1,33 +1,38 @@
-<!-- Project: Ride Tracker Website -->
-
-
-<!-- addRide.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Ride - Ride Tracker</title>
+  <title>Add Ride</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="app.js"></script>
-<nav>
-    <div class="navbar">
+<body>
+  <div class="navbar">
+    <div class="nav-left">
       <a href="index.html">Home</a>
       <a href="addRide.html">Add Ride</a>
       <a href="summary.html">Weekly Summary</a>
     </div>
+    <div class="nav-right">
+      <span id="welcomeMsg" style="color: white; margin-right: 20px;"></span>
+      <div class="profile-icon" onclick="toggleProfileMenu()">
+        <span id="profileInitials"></span>
+        <div id="profileMenu" class="dropdown-content">
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 
-<body>
   <div class="container">
     <h1>Add a Ride</h1>
+
     <div class="form-group">
-        <label for="newPerson">Add New Person:</label>
-        <input type="text" id="newPerson" placeholder="Enter name">
-        <button type="button" class="btn" onclick="addPerson()">Add</button>
-      </div>
+      <label for="newPerson">Add New Person:</label>
+      <input type="text" id="newPerson" placeholder="Enter name">
+      <button type="button" class="btn" onclick="addPerson()">Add</button>
+    </div>
+
     <form id="rideForm">
       <div class="form-group">
         <label for="name">Name:</label>
@@ -36,7 +41,6 @@
           <option value="Suma">Suma</option>
           <option value="Jakki">Jakki</option>
           <option value="Rithin">Rithin</option>
-          <!-- Add more names as needed -->
         </select>
       </div>
 
@@ -51,32 +55,8 @@
           <option value="">--Select Location--</option>
           <option value="Mills">Mills</option>
           <option value="Motel">Motel</option>
-          <option value="Riverside">Riverside</option>
         </select>
       </div>
-      <div class="form-group">
-        <div class="form-group">
-            <label for="carTo">Car (To):</label>
-            <select id="carTo" required>
-              <option value="">--Select Car--</option>
-              <option value="Nissan">Nissan</option>
-              <option value="Hybrid">Hybrid</option>
-              <option value="Honda">Honda</option>
-              <option value="Ford">Ford</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="carReturn">Car (Return):</label>
-            <select id="carReturn">
-              <option value="">--Select Car--</option>
-              <option value="Nissan">Nissan</option>
-              <option value="Hybrid">Hybrid</option>
-              <option value="Honda">Honda</option>
-              <option value="Ford">Ford</option>
-            </select>
-          </div>
-      
 
       <div class="form-group">
         <label for="tripType">Trip Type:</label>
@@ -87,13 +67,112 @@
         </select>
       </div>
 
+      <div class="form-group">
+        <label for="carTo">Car (To):</label>
+        <select id="carTo" required>
+          <option value="">--Select Car--</option>
+          <option value="Nissan">Nissan</option>
+          <option value="Hybrid">Hybrid</option>
+          <option value="Honda">Honda</option>
+          <option value="Ford">Ford</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="carReturn">Car (Return):</label>
+        <select id="carReturn">
+          <option value="">--Select Car--</option>
+          <option value="Nissan">Nissan</option>
+          <option value="Hybrid">Hybrid</option>
+          <option value="Honda">Honda</option>
+          <option value="Ford">Ford</option>
+        </select>
+      </div>
+
       <button type="submit" class="btn">Submit Ride</button>
     </form>
 
-    <div id="result" class="result"></div>
+    <div id="result"></div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="app.js"></script>
+  <script>
+    window.onload = function () {
+      const initials = localStorage.getItem('userInitials');
+      if (initials) {
+        document.getElementById('profileInitials').innerText = initials;
+      }
+    };
+
+    function toggleProfileMenu() {
+      const menu = document.getElementById("profileMenu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    function addPerson() {
+      const newPersonInput = document.getElementById("newPerson");
+      const newName = newPersonInput.value.trim();
+      const nameSelect = document.getElementById("name");
+
+      if (newName) {
+        const optionExists = Array.from(nameSelect.options).some(opt => opt.value === newName);
+        if (!optionExists) {
+          const newOption = document.createElement("option");
+          newOption.value = newName;
+          newOption.textContent = newName;
+          nameSelect.appendChild(newOption);
+          nameSelect.value = newName;
+          newPersonInput.value = "";
+        } else {
+          alert("Name already exists in the list.");
+        }
+      } else {
+        alert("Please enter a name.");
+      }
+    }
+
+    document.getElementById("rideForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const date = document.getElementById("date").value;
+      const location = document.getElementById("location").value;
+      const tripType = document.getElementById("tripType").value;
+      const carTo = document.getElementById("carTo").value;
+      const carReturn = document.getElementById("carReturn").value;
+
+      let fare = 0;
+      if (location === "Mills") {
+        fare = tripType === "Round-trip" ? 8 : 4;
+      } else if (location === "Motel") {
+        fare = tripType === "Round-trip" ? 10 : 5;
+      }
+
+      const rideData = { name, date, location, tripType, fare, carTo, carReturn };
+      firebase.database().ref("rides").push(rideData)
+        .then(() => {
+          document.getElementById("result").innerText = "✅ Ride added successfully!";
+          document.getElementById("rideForm").reset();
+        })
+        .catch(err => {
+          document.getElementById("result").innerText = "❌ Error: " + err.message;
+        });
+    });
+
+    window.onload = function () {
+    const initials = localStorage.getItem("userInitials");
+    const firstName = localStorage.getItem("firstName");
+    
+    if (initials) {
+      document.getElementById("profileInitials").innerText = initials;
+    }
+    if (firstName) {
+      document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
+    }
+  };
+  </script>
 </body>
 </html>
-
