@@ -22,19 +22,15 @@
       </div>
     </div>
   </div>
-  
 
   <div class="container">
     <h2>Weekly Summary</h2>
-
     <div class="form-group">
       <label>Filter by Date:</label><br>
       <input type="date" id="startDate"> to
       <input type="date" id="endDate">
       <button class="btn" onclick="filterRides()">Apply</button>
       <button class="btn" onclick="clearTable()">Clear Table</button>
-      <button class="btn" onclick="downloadPDF()">Download PDF</button>
-      <button class="btn" onclick="downloadExcel()">Download Excel</button>
     </div>
 
     <table class="summary-table">
@@ -47,6 +43,7 @@
           <th>Fare ($)</th>
           <th>Car (To)</th>
           <th>Car (Return)</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody id="summaryBody"></tbody>
@@ -56,34 +53,38 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="app.js"></script>
   <script>
-    const summaryBody = document.getElementById("summaryBody");
     let allRides = [];
 
     firebase.database().ref("rides").on("value", snapshot => {
+      const summaryBody = document.getElementById("summaryBody");
       summaryBody.innerHTML = "";
       allRides = [];
       snapshot.forEach(child => {
+        const key = child.key;
         const ride = child.val();
-        allRides.push(ride);
-        addRow(ride);
+        allRides.push({ ...ride, key });
+        addRow(ride, key);
       });
     });
 
-    function addRow(ride) {
-      const row = `<tr>
+    function addRow(ride, key) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
         <td>${ride.name}</td>
         <td>${formatDate(ride.date)}</td>
         <td>${ride.location}</td>
         <td>${ride.tripType}</td>
-        <td>${ride.fare}</td>
-        <td>${ride.carTo || '-'}</td>
-        <td>${ride.carReturn || '-'}</td>
-      </tr>`;
-      summaryBody.innerHTML += row;
+        <td>$${ride.fare}</td>
+        <td>${ride.carTo || "-"}</td>
+        <td>${ride.carReturn || "-"}</td>
+        <td>
+          <button class="btn-sm" onclick="editRide('${key}')">✏️</button>
+          <button class="btn-sm btn-danger" onclick="deleteRide('${key}')">🗑️</button>
+        </td>
+      `;
+      document.getElementById("summaryBody").appendChild(row);
     }
 
     function formatDate(dateStr) {
@@ -94,43 +95,55 @@
     function filterRides() {
       const start = document.getElementById("startDate").value;
       const end = document.getElementById("endDate").value;
+      const summaryBody = document.getElementById("summaryBody");
       summaryBody.innerHTML = "";
       allRides
         .filter(ride => ride.date >= start && ride.date <= end)
-        .forEach(addRow);
+        .forEach(ride => addRow(ride, ride.key));
     }
 
     function clearTable() {
       document.getElementById("startDate").value = "";
       document.getElementById("endDate").value = "";
+      const summaryBody = document.getElementById("summaryBody");
       summaryBody.innerHTML = "";
-      allRides.forEach(addRow);
+      allRides.forEach(ride => addRow(ride, ride.key));
     }
 
-    function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Weekly Ride Summary", 10, 10);
-      let y = 20;
-      allRides.forEach(ride => {
-        const line = `${ride.name} | ${formatDate(ride.date)} | ${ride.location} | ${ride.tripType} | $${ride.fare} | ${ride.carTo || '-'} | ${ride.carReturn || '-'}`;
-        doc.text(line, 10, y);
-        y += 10;
+    function deleteRide(rideKey) {
+      if (confirm("Are you sure you want to delete this ride?")) {
+        firebase.database().ref("rides/" + rideKey).remove()
+          .then(() => {
+            alert("Ride deleted.");
+          })
+          .catch(err => {
+            alert("Error deleting ride: " + err.message);
+          });
+      }
+    }
+
+    function editRide(rideKey) {
+      firebase.database().ref("rides/" + rideKey).once("value").then(snapshot => {
+        const ride = snapshot.val();
+        const updatedFare = prompt("Update Fare ($):", ride.fare);
+        if (updatedFare !== null) {
+          firebase.database().ref("rides/" + rideKey).update({
+            fare: parseFloat(updatedFare)
+          }).then(() => {
+            alert("Ride updated.");
+          });
+        }
       });
-      doc.save("RideSummary.pdf");
-    }
-
-    function downloadExcel() {
-      const ws = XLSX.utils.json_to_sheet(allRides);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "RideSummary");
-      XLSX.writeFile(wb, "RideSummary.xlsx");
     }
 
     window.onload = function () {
-      const initials = localStorage.getItem('userInitials');
+      const initials = localStorage.getItem("userInitials");
+      const firstName = localStorage.getItem("firstName");
       if (initials) {
-        document.getElementById('profileInitials').innerText = initials;
+        document.getElementById("profileInitials").innerText = initials;
+      }
+      if (firstName) {
+        document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
       }
     };
 
@@ -138,17 +151,6 @@
       const menu = document.getElementById("profileMenu");
       menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
-    window.onload = function () {
-    const initials = localStorage.getItem("userInitials");
-    const firstName = localStorage.getItem("firstName");
-    
-    if (initials) {
-      document.getElementById("profileInitials").innerText = initials;
-    }
-    if (firstName) {
-      document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
-    }
-  };
   </script>
 </body>
 </html>
