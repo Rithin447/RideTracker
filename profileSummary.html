@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Profile Summary</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="navbar">
+    <div class="nav-left">
+      <a href="index.html">Home</a>
+      <a href="addRide.html">Add Ride</a>
+      <a href="summary.html">Weekly Summary</a>
+      <a href="profileSummary.html">Profile Summary</a>
+    </div>
+    <div class="nav-right">
+      <span id="welcomeMsg" style="color: white; margin-right: 20px;"></span>
+      <div class="profile-icon" onclick="toggleProfileMenu()">
+        <span id="profileInitials"></span>
+        <div id="profileMenu" class="dropdown-content">
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Profile Ride Summary</h2>
+    <div class="form-group">
+      <label for="personSelect">Select Person:</label>
+      <select id="personSelect" required>
+        <option value="">--Select Person--</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="startDate">Start Date:</label>
+      <input type="date" id="startDate">
+      <label for="endDate">End Date:</label>
+      <input type="date" id="endDate">
+      <button class="btn" onclick="calculateProfileSummary()">Calculate</button>
+    </div>
+
+    <div id="summaryResult" style="margin-top: 20px;"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="app.js"></script>
+  <script>
+    function toggleProfileMenu() {
+      const menu = document.getElementById("profileMenu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    function populatePersonDropdown() {
+      const personSelect = document.getElementById("personSelect");
+      personSelect.innerHTML = '<option value="">--Select Person--</option>';
+
+      firebase.database().ref("members").once("value").then(snapshot => {
+        snapshot.forEach(child => {
+          const name = child.val();
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          personSelect.appendChild(option);
+        });
+      });
+    }
+
+    function calculateProfileSummary() {
+      const name = document.getElementById("personSelect").value;
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+      const resultDiv = document.getElementById("summaryResult");
+
+      if (!name || !start || !end) {
+        alert("Please select a person and date range.");
+        return;
+      }
+
+      firebase.database().ref("rides").once("value").then(snapshot => {
+        let totalFare = 0;
+        let totalRides = 0;
+        let tableHTML = `
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Trip Type</th>
+                <th>Car (To)</th>
+                <th>Car (Return)</th>
+                <th>Fare ($)</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        snapshot.forEach(child => {
+          const ride = child.val();
+          if (
+            ride.name === name &&
+            ride.date >= start &&
+            ride.date <= end
+          ) {
+            tableHTML += `
+              <tr>
+                <td>${ride.date}</td>
+                <td>${ride.location}</td>
+                <td>${ride.tripType}</td>
+                <td>${ride.carTo || "-"}</td>
+                <td>${ride.carReturn || "-"}</td>
+                <td>$${parseFloat(ride.fare).toFixed(2)}</td>
+              </tr>
+            `;
+            totalFare += parseFloat(ride.fare);
+            totalRides += 1;
+          }
+        });
+
+        tableHTML += `</tbody></table>`;
+        tableHTML += `
+          <div style="margin-top: 20px;">
+            <p><strong>Total Rides:</strong> ${totalRides}</p>
+            <p><strong>Total Fare:</strong> $${totalFare.toFixed(2)}</p>
+          </div>
+        `;
+
+        resultDiv.innerHTML = tableHTML;
+      });
+    }
+
+    window.onload = function () {
+      const initials = localStorage.getItem("userInitials");
+      const firstName = localStorage.getItem("firstName");
+      if (initials) {
+        document.getElementById("profileInitials").innerText = initials;
+      }
+      if (firstName) {
+        document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
+      }
+
+      populatePersonDropdown();
+    };
+  </script>
+</body>
+</html>
