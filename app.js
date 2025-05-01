@@ -1,5 +1,4 @@
 
-
 window.onload = function () {
   const firebaseConfig = {
     apiKey: "AIzaSyCjXAc0n4Gh8OereVnXLTsywrOPQGSB08U",
@@ -47,8 +46,8 @@ window.onload = function () {
     const date = document.getElementById('date').value;
     const location = document.getElementById('location').value;
     const tripType = document.getElementById('tripType').value;
-    const carName = document.getElementById('carName').value;
-
+    const carTo = document.getElementById('carTo').value;
+    const carReturn = document.getElementById('carReturn').value;
 
     let fare = 0;
     if (location === "Mills") {
@@ -56,18 +55,14 @@ window.onload = function () {
     } else if (location === "Motel") {
       if (tripType === "Round-trip") {
         fare = 5;
-      } else if (location === "Riverside") {
-        if (tripType === "Round-trip") {
-          fare = 8;
-        } else {
-          alert("Motel only supports Round-trip rides.");
-          return;
-        }
+      } else {
+        alert("Motel only supports Round-trip rides.");
+        return;
       }
     }
 
     const newRideRef = db.ref("rides").push();
-    newRideRef.set({ name, date, location, tripType, fare, carName });
+    newRideRef.set({ name, date, location, tripType, fare, carTo, carReturn });
 
     document.getElementById('result').innerHTML = `
       <strong>Ride Submitted!</strong><br>
@@ -75,7 +70,9 @@ window.onload = function () {
       Date: ${date}<br>
       Location: ${location}<br>
       Trip Type: ${tripType}<br>
-      Fare: $${fare}
+      Fare: $${fare}<br>
+      Car (To): ${carTo}<br>
+      Car (Return): ${carReturn || '-'}
     `;
 
     rideForm.reset();

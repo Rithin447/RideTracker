@@ -35,7 +35,9 @@
           <th>Location</th>
           <th>Trip Type</th>
           <th>Fare ($)</th>
-          <th>Car</th>
+          <th>Car (To)</th>
+          <th>Car (Return)</th>
+
         </tr>
       </thead>
       <tbody id="summaryBody">
@@ -80,6 +82,9 @@
         <td>${ride.tripType}</td>
         <td>${ride.fare}</td>
         <td>${ride.carName || '-'}</td>
+        <td>${ride.carTo || '-'}</td>
+        <td>${ride.carReturn || '-'}</td>
+
       </tr>`;
       summaryBody.innerHTML += row;
     }

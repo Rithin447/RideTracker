@@ -1,0 +1,48 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - RideTracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Login to RideTracker</h2>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required><br>
+      <input type="password" id="loginPassword" placeholder="Password" required><br>
+      <button type="submit" class="btn">Login</button>
+    </form>
+    <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjXAc0n4Gh8OereVnXLTsywrOPQGSB08U",
+      authDomain: "ridetracker-5bace.firebaseapp.com",
+      projectId: "ridetracker-5bace",
+      storageBucket: "ridetracker-5bace.appspot.com",
+      messagingSenderId: "903250961017",
+      appId: "1:903250961017:web:7af86b799df770e5152aa8"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => {
+          window.location.href = 'index.html';
+        })
+        .catch(error => alert("Login failed: " + error.message));
+    });
+  </script>
+</body>
+</html>
+
