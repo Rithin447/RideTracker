@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>RideTracker - Home</title>
+  <script>
+    const user = localStorage.getItem("firstName");
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,6 +38,9 @@
   <div class="container">
     <h1>Welcome to RideTracker</h1>
     <p>This application helps you manage and track shared rides for your team with detailed logs and summaries.</p>
+    <div id="loginButtonContainer" style="display: none;">
+      <a href="login.html" class="btn">Login</a>
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -54,6 +63,14 @@
       if (localStorage.getItem("isAdmin") === "true") {
   document.getElementById("adminNavLink").style.display = "block";
 }
+const isLoggedIn = localStorage.getItem("firstName");
+
+if (!isLoggedIn) {
+  document.getElementById("loginButtonContainer").style.display = "block";
+} else {
+  document.getElementById("loginButtonContainer").style.display = "none";
+}
+
 
     };
   

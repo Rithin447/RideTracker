@@ -7,7 +7,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>Login</h2>
+    <h2>Login Here To Add Your Ride</h2>
     <form id="loginForm">
       <input type="email" id="loginEmail" placeholder="Email" required>
       <input type="password" id="loginPassword" placeholder="Password" required>
@@ -21,28 +21,39 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="app.js"></script>
   <script>
-    const loginForm = document.getElementById("loginForm");
+    document.addEventListener("DOMContentLoaded", () => {
+      const user = localStorage.getItem("firstName");
+      if (user) {
+        window.location.href = "index.html"; // redirect logged-in users
+        return;
+      }
 
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+      const loginForm = document.getElementById("loginForm");
+      if (loginForm) {
+        loginForm.addEventListener("submit", function (e) {
+          e.preventDefault();
 
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
+          const email = document.getElementById("loginEmail").value.trim();
+          const password = document.getElementById("loginPassword").value;
 
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          const uid = userCredential.user.uid;
-          return firebase.database().ref("users/" + uid).once("value");
-        })
-        .then(snapshot => {
-          const data = snapshot.val();
-          const initials = data.firstName.charAt(0).toUpperCase() + data.lastName.charAt(0).toUpperCase();
-          localStorage.setItem("userInitials", initials);
-          window.location.href = "index.html";
-        })
-        .catch(error => {
-          alert(error.message);
+          firebase.auth().signInWithEmailAndPassword(email, password)
+            .then(userCredential => {
+              const uid = userCredential.user.uid;
+              return firebase.database().ref("users/" + uid).once("value");
+            })
+            .then(snapshot => {
+              const data = snapshot.val();
+              const initials = data.firstName.charAt(0).toUpperCase() + data.lastName.charAt(0).toUpperCase();
+              localStorage.setItem("userInitials", initials);
+              localStorage.setItem("firstName", data.firstName);
+              localStorage.setItem("isAdmin", email === "admin@ridetracker.com" ? "true" : "false");
+              window.location.href = "index.html";
+            })
+            .catch(error => {
+              alert(error.message);
+            });
         });
+      }
     });
   </script>
 </body>
