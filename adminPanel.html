@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>RideTracker - Home</title>
+  <title>Admin Panel</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,9 +16,10 @@
         <a href="rideManager.html">Ride Manager</a>
       </div>
       
+      <a href="adminPanel.html" class="active">Admin Panel</a>
     </div>
     <div class="nav-right">
-      <span id="welcomeMsg" style="color: white; margin-right: 20px;"></span>
+      <span id="welcomeMsg" style="margin-right: 20px;"></span>
       <div class="profile-icon" onclick="toggleProfileMenu()">
         <span id="profileInitials"></span>
         <div id="profileMenu" class="dropdown-content">
@@ -27,51 +28,46 @@
       </div>
     </div>
   </div>
-  
 
   <div class="container">
-    <h1>Welcome to RideTracker</h1>
-    <p>This application helps you manage and track shared rides for your team with detailed logs and summaries.</p>
+    <h2>Admin Panel</h2>
+    <p>This area is accessible only to administrators.</p>
+
+    <div id="adminContent" style="margin-top: 20px;">
+      <h3>User Accounts (Coming Soon)</h3>
+      <p>Here you’ll be able to view and manage user registrations.</p>
+
+      <h3>Activity Logs (Coming Soon)</h3>
+      <p>Track who submitted which rides and when.</p>
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="app.js"></script>
   <script>
+    function toggleProfileMenu() {
+      const menu = document.getElementById("profileMenu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
     window.onload = function () {
       const initials = localStorage.getItem("userInitials");
       const firstName = localStorage.getItem("firstName");
-  
-      if (initials) {
-        const profileEl = document.getElementById("profileInitials");
-        if (profileEl) profileEl.innerText = initials;
-      }
-  
-      if (firstName) {
-        const welcomeEl = document.getElementById("welcomeMsg");
-        if (welcomeEl) welcomeEl.innerText = "Welcome, " + firstName;
+      const isAdmin = localStorage.getItem("isAdmin");
+
+      if (initials) document.getElementById("profileInitials").innerText = initials;
+      if (firstName) document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
+
+      if (isAdmin !== "true") {
+        alert("Access denied. Admins only.");
+        window.location.href = "index.html";
       }
       if (localStorage.getItem("isAdmin") === "true") {
   document.getElementById("adminNavLink").style.display = "block";
 }
 
     };
-  
-    function toggleProfileMenu() {
-      const menu = document.getElementById("profileMenu");
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
-    }
   </script>
-  
-  <style>
-
-body {
-  background-image: url('https://w0.peakpx.com/wallpaper/721/583/HD-wallpaper-road-beauty-green-highway-jungle-mountain-nature.jpg');
-  background-size: cover;
-  background-position: full center;
-  background-repeat: no-repeat;
-}
-
-  </style>
 </body>
 </html>

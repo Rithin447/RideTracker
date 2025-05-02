@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Weekly Summary</title>
+  <title>Registered Users</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -10,11 +10,13 @@
     <div class="nav-left">
       <a href="index.html">Home</a>
       <a href="addRide.html">Add Ride</a>
-      <a href="summary.html" class="active">Weekly Summary</a>
+      <a href="summary.html">Weekly Summary</a>
       <a href="profileSummary.html">Profile Summary</a>
+      <a href="adminPanel.html">Admin Panel</a>
+      <a href="userView.html" class="active">User View</a>
     </div>
     <div class="nav-right">
-      <span id="welcomeMsg" style="margin-right: 20px; color: white;"></span>
+      <span id="welcomeMsg" style="margin-right: 20px;"></span>
       <div class="profile-icon" onclick="toggleProfileMenu()">
         <span id="profileInitials"></span>
         <div id="profileMenu" class="dropdown-content">
@@ -25,20 +27,15 @@
   </div>
 
   <div class="container">
-    <h2>Weekly Ride Summary</h2>
+    <h2>All Registered Users</h2>
     <table class="summary-table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Date</th>
-          <th>Location</th>
-          <th>Trip Type</th>
-          <th>Fare</th>
-          <th>Car (To)</th>
-          <th>Car (Return)</th>
+          <th>Full Name</th>
+          <th>Email</th>
         </tr>
       </thead>
-      <tbody id="summaryTableBody"></tbody>
+      <tbody id="userTableBody"></tbody>
     </table>
   </div>
 
@@ -52,40 +49,33 @@
       menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
 
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        localStorage.clear();
-        window.location.href = "login.html";
-      });
-    }
+    window.onload = function () {
+      const initials = localStorage.getItem("userInitials");
+      const firstName = localStorage.getItem("firstName");
+      const isAdmin = localStorage.getItem("isAdmin");
 
-    function loadSummary() {
-      const table = document.getElementById("summaryTableBody");
-      firebase.database().ref("rides").once("value").then(snapshot => {
+      if (initials) document.getElementById("profileInitials").innerText = initials;
+      if (firstName) document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
+
+      if (isAdmin !== "true") {
+        alert("Access denied. Admins only.");
+        window.location.href = "index.html";
+      }
+
+      // Fetch all users from Firebase
+      firebase.database().ref("users").once("value").then(snapshot => {
+        const table = document.getElementById("userTableBody");
         table.innerHTML = "";
         snapshot.forEach(child => {
-          const ride = child.val();
+          const user = child.val();
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${ride.name}</td>
-            <td>${ride.date}</td>
-            <td>${ride.location}</td>
-            <td>${ride.tripType}</td>
-            <td>${ride.fare}</td>
-            <td>${ride.carTo || ""}</td>
-            <td>${ride.carReturn || ""}</td>
+            <td>${user.firstName} ${user.lastName}</td>
+            <td>${user.email}</td>
           `;
           table.appendChild(row);
         });
       });
-    }
-
-    window.onload = function () {
-      const initials = localStorage.getItem("userInitials");
-      const firstName = localStorage.getItem("firstName");
-      if (initials) document.getElementById("profileInitials").innerText = initials;
-      if (firstName) document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
-      loadSummary();
     };
   </script>
 </body>

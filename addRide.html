@@ -6,10 +6,10 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <<div class="navbar">
+  <div class="navbar">
     <div class="nav-left">
       <a href="index.html">Home</a>
-      <a href="addRide.html">Add Ride</a>
+      <a href="addRide.html" class="active">Add Ride</a>
       <a href="summary.html">Weekly Summary</a>
       <a href="profileSummary.html">Profile Summary</a>
     </div>
@@ -23,12 +23,11 @@
       </div>
     </div>
   </div>
-  
 
   <div class="container">
-    <h1>Add a Ride</h1>
+    <h2>Add a Ride</h2>
 
-    <div class="form-group">
+    <div id="addPersonSection" style="display: none;" class="form-group">
       <label for="newPerson">Add New Person:</label>
       <input type="text" id="newPerson" placeholder="Enter name">
       <button type="button" class="btn" onclick="addPerson()">Add</button>
@@ -39,9 +38,6 @@
         <label for="name">Name:</label>
         <select id="name" required>
           <option value="">--Select Person--</option>
-          <option value="Suma">Suma</option>
-          <option value="Jakki">Jakki</option>
-          <option value="Rithin">Rithin</option>
         </select>
       </div>
 
@@ -101,39 +97,72 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="app.js"></script>
   <script>
-    window.onload = function () {
-      const initials = localStorage.getItem('userInitials');
-      if (initials) {
-        document.getElementById('profileInitials').innerText = initials;
-      }
-    };
-
     function toggleProfileMenu() {
       const menu = document.getElementById("profileMenu");
       menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
 
+    function loadMembers() {
+      const nameSelect = document.getElementById("name");
+      nameSelect.innerHTML = '<option value="">--Select Person--</option>';
+      firebase.database().ref("members").once("value").then(snapshot => {
+        snapshot.forEach(child => {
+          const option = document.createElement("option");
+          option.value = child.val();
+          option.textContent = child.val();
+          nameSelect.appendChild(option);
+        });
+      });
+    }
+
     function addPerson() {
       const newPersonInput = document.getElementById("newPerson");
       const newName = newPersonInput.value.trim();
-      const nameSelect = document.getElementById("name");
 
-      if (newName) {
-        const optionExists = Array.from(nameSelect.options).some(opt => opt.value === newName);
-        if (!optionExists) {
-          const newOption = document.createElement("option");
-          newOption.value = newName;
-          newOption.textContent = newName;
-          nameSelect.appendChild(newOption);
-          nameSelect.value = newName;
-          newPersonInput.value = "";
-        } else {
-          alert("Name already exists in the list.");
-        }
-      } else {
+      if (!newName) {
         alert("Please enter a name.");
+        return;
       }
+
+      firebase.database().ref("members").once("value").then(snapshot => {
+        let exists = false;
+        snapshot.forEach(child => {
+          if (child.val().toLowerCase() === newName.toLowerCase()) {
+            exists = true;
+          }
+        });
+
+        if (exists) {
+          alert("This name already exists.");
+        } else {
+          firebase.database().ref("members").push(newName).then(() => {
+            newPersonInput.value = "";
+            loadMembers(); // refresh the dropdown
+          });
+        }
+      });
     }
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        localStorage.clear();
+        window.location.href = "login.html";
+      });
+    }
+
+    window.onload = function () {
+      const initials = localStorage.getItem("userInitials");
+      const firstName = localStorage.getItem("firstName");
+      const isAdmin = localStorage.getItem("isAdmin");
+
+      if (initials) document.getElementById("profileInitials").innerText = initials;
+      if (firstName) document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
+      if (isAdmin === "true") {
+        document.getElementById("addPersonSection").style.display = "block";
+      }
+
+      loadMembers();
+    };
 
     document.getElementById("rideForm").addEventListener("submit", function (e) {
       e.preventDefault();
@@ -162,71 +191,6 @@
           document.getElementById("result").innerText = "❌ Error: " + err.message;
         });
     });
-
-    window.onload = function () {
-    const initials = localStorage.getItem("userInitials");
-    const firstName = localStorage.getItem("firstName");
-    
-    if (initials) {
-      document.getElementById("profileInitials").innerText = initials;
-    }
-    if (firstName) {
-      document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
-    }
-  };
-  function loadMembers() {
-  const nameSelect = document.getElementById("name");
-  nameSelect.innerHTML = '<option value="">--Select Person--</option>';
-
-  firebase.database().ref("members").once("value").then(snapshot => {
-    snapshot.forEach(child => {
-      const option = document.createElement("option");
-      option.value = child.val();
-      option.textContent = child.val();
-      nameSelect.appendChild(option);
-    });
-  });
-}
-function addPerson() {
-  const newPersonInput = document.getElementById("newPerson");
-  const newName = newPersonInput.value.trim();
-
-  if (!newName) {
-    alert("Please enter a name.");
-    return;
-  }
-
-  firebase.database().ref("members").once("value").then(snapshot => {
-    let exists = false;
-    snapshot.forEach(child => {
-      if (child.val().toLowerCase() === newName.toLowerCase()) {
-        exists = true;
-      }
-    });
-
-    if (exists) {
-      alert("This name already exists.");
-    } else {
-      firebase.database().ref("members").push(newName).then(() => {
-        newPersonInput.value = "";
-        loadMembers(); // refresh the dropdown
-      });
-    }
-  });
-}
-window.onload = function () {
-  const initials = localStorage.getItem("userInitials");
-  const firstName = localStorage.getItem("firstName");
-  if (initials) {
-    document.getElementById("profileInitials").innerText = initials;
-  }
-  if (firstName) {
-    document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
-  }
-
-  loadMembers(); // 👈 this is the key!
-};
-
   </script>
 </body>
 </html>

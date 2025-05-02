@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Weekly Summary</title>
+  <title>Ride Manager (Admin Only)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -10,8 +10,9 @@
     <div class="nav-left">
       <a href="index.html">Home</a>
       <a href="addRide.html">Add Ride</a>
-      <a href="summary.html" class="active">Weekly Summary</a>
+      <a href="summary.html">Weekly Summary</a>
       <a href="profileSummary.html">Profile Summary</a>
+      <a href="rideManager.html" class="active">Manage Rides</a>
     </div>
     <div class="nav-right">
       <span id="welcomeMsg" style="margin-right: 20px; color: white;"></span>
@@ -25,7 +26,7 @@
   </div>
 
   <div class="container">
-    <h2>Weekly Ride Summary</h2>
+    <h2>Ride Management (Admin Only)</h2>
     <table class="summary-table">
       <thead>
         <tr>
@@ -36,9 +37,10 @@
           <th>Fare</th>
           <th>Car (To)</th>
           <th>Car (Return)</th>
+          <th>Actions</th>
         </tr>
       </thead>
-      <tbody id="summaryTableBody"></tbody>
+      <tbody id="rideTableBody"></tbody>
     </table>
   </div>
 
@@ -59,12 +61,14 @@
       });
     }
 
-    function loadSummary() {
-      const table = document.getElementById("summaryTableBody");
+    function loadRides() {
+      const table = document.getElementById("rideTableBody");
       firebase.database().ref("rides").once("value").then(snapshot => {
         table.innerHTML = "";
         snapshot.forEach(child => {
           const ride = child.val();
+          const id = child.key;
+
           const row = document.createElement("tr");
           row.innerHTML = `
             <td>${ride.name}</td>
@@ -74,18 +78,76 @@
             <td>${ride.fare}</td>
             <td>${ride.carTo || ""}</td>
             <td>${ride.carReturn || ""}</td>
+            <td>
+              <button onclick="editRide('${id}')">Edit</button>
+              <button onclick="deleteRide('${id}')">Delete</button>
+            </td>
           `;
           table.appendChild(row);
         });
       });
     }
 
+    function deleteRide(id) {
+      if (confirm("Are you sure you want to delete this ride?")) {
+        firebase.database().ref("rides/" + id).remove().then(() => {
+          alert("Ride deleted.");
+          loadRides();
+        });
+      }
+    }
+
+    function editRide(id) {
+      firebase.database().ref("rides/" + id).once("value").then(snapshot => {
+        const ride = snapshot.val();
+        const updatedName = prompt("Edit Name:", ride.name);
+        const updatedDate = prompt("Edit Date:", ride.date);
+        const updatedLocation = prompt("Edit Location:", ride.location);
+        const updatedTrip = prompt("Edit Trip Type:", ride.tripType);
+        const updatedCarTo = prompt("Edit Car (To):", ride.carTo || "");
+        const updatedCarReturn = prompt("Edit Car (Return):", ride.carReturn || "");
+
+        if (updatedName && updatedDate && updatedLocation && updatedTrip) {
+          let fare = 0;
+          if (updatedLocation === "Mills") {
+            fare = updatedTrip === "Round-trip" ? 8 : 4;
+          } else if (updatedLocation === "Motel") {
+            fare = updatedTrip === "Round-trip" ? 10 : 5;
+          }
+
+          const updatedData = {
+            name: updatedName,
+            date: updatedDate,
+            location: updatedLocation,
+            tripType: updatedTrip,
+            fare,
+            carTo: updatedCarTo,
+            carReturn: updatedCarReturn
+          };
+
+          firebase.database().ref("rides/" + id).set(updatedData).then(() => {
+            alert("Ride updated.");
+            loadRides();
+          });
+        }
+      });
+    }
+
     window.onload = function () {
       const initials = localStorage.getItem("userInitials");
       const firstName = localStorage.getItem("firstName");
+      const isAdmin = localStorage.getItem("isAdmin");
+
       if (initials) document.getElementById("profileInitials").innerText = initials;
       if (firstName) document.getElementById("welcomeMsg").innerText = "Welcome, " + firstName;
-      loadSummary();
+
+      if (isAdmin !== "true") {
+        alert("Access denied. Admins only.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      loadRides();
     };
   </script>
 </body>
