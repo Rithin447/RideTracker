@@ -42,12 +42,18 @@
               return firebase.database().ref("users/" + uid).once("value");
             })
             .then(snapshot => {
-              const data = snapshot.val();
-              const initials = data.firstName.charAt(0).toUpperCase() + data.lastName.charAt(0).toUpperCase();
-              localStorage.setItem("userInitials", initials);
-              localStorage.setItem("firstName", data.firstName);
-              localStorage.setItem("isAdmin", email === "admin@ridetracker.com" ? "true" : "false");
-              window.location.href = "index.html";
+              const email = data.email.toLowerCase();
+const isAdmin = email === "testadmin@gmail.com";
+
+localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+
+if (isAdmin) {
+  alert("✅ Logged in as ADMIN");
+  window.location.href = "adminPanel.html";
+} else {
+  window.location.href = "index.html";
+}
+
             })
             .catch(error => {
               alert(error.message);

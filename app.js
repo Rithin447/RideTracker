@@ -12,7 +12,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const ADMIN_EMAIL = "rithinadmin@gmail.com"; // define single admin email
+const ADMIN_EMAIL = "testadmin@gmail.com"; // define single admin email
 
 // SIGNUP
 const signupForm = document.getElementById("signupForm");
@@ -43,39 +43,43 @@ if (signupForm) {
   });
 }
 
+
 // LOGIN
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
   loginForm.addEventListener("submit", function (e) {
     e.preventDefault();
-  
-    const emailInput = document.getElementById("loginEmail").value.trim(); // renamed to avoid shadowing
+
+    const emailInput = document.getElementById("loginEmail").value.trim().toLowerCase();
     const password = document.getElementById("loginPassword").value;
-  
+
     firebase.auth().signInWithEmailAndPassword(emailInput, password)
       .then(userCredential => {
         const uid = userCredential.user.uid;
-        return firebase.database().ref("users/" + uid).once("value").then(snapshot => {
-          const user = snapshot.val();
-          const initials = user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase();
-  
-          localStorage.setItem("userInitials", initials);
-          localStorage.setItem("firstName", user.firstName);
-          localStorage.setItem("isAdmin", emailInput === ADMIN_EMAIL ? "true" : "false");
-  
-          if (emailInput.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-            window.location.href = "adminPanel.html";
-          } else {
-            window.location.href = "index.html";
-          }
-          
-        });
+        return firebase.database().ref("users/" + uid).once("value");
+      })
+      .then(snapshot => {
+        const user = snapshot.val();
+        const initials = user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase();
+        const isAdmin = emailInput === ADMIN_EMAIL.toLowerCase(); // Clean comparison
+
+        localStorage.setItem("userInitials", initials);
+        localStorage.setItem("firstName", user.firstName);
+        localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+
+        if (isAdmin) {
+          alert("✅ Logged in as ADMIN");
+          window.location.href = "adminPanel.html";
+        } else {
+          window.location.href = "index.html";
+        }
       })
       .catch(error => {
         alert(error.message);
       });
   });
-  ;}
+}
+
 
 // LOGOUT
 function logout() {
