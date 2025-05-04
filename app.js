@@ -92,3 +92,53 @@ function logout() {
       alert("Logout failed: " + error.message);
     });
 }
+
+gtag('event', 'ride_added', {
+  location: newRide.location,
+  user: newRide.name
+});
+
+gtag('event', 'login', {
+  method: 'email_password',
+  email: user.email
+});
+
+
+
+
+function calculateSharedFareAndSaveRide(newRide) {
+  const rideRef = firebase.database().ref("rides");
+
+  rideRef.orderByChild("date").equalTo(newRide.date).once("value").then(snapshot => {
+    let matchingRides = [];
+
+    snapshot.forEach(child => {
+      const ride = child.val();
+
+      const sameLocation = ride.location === newRide.location;
+      const sameTrip = ride.tripType === newRide.tripType;
+      const sameCar = ride.carTo === newRide.carTo;
+
+      if (sameLocation && sameTrip && sameCar) {
+        matchingRides.push(child.key);
+      }
+    });
+
+    const totalFare = (newRide.location === "Mills" && newRide.tripType === "Round-trip") ? 15 : newRide.fare;
+    const peopleCount = matchingRides.length + 1;
+    const individualFare = totalFare / peopleCount;
+
+    // Update existing rides
+    matchingRides.forEach(rideId => {
+      rideRef.child(rideId).update({ fare: individualFare });
+    });
+
+    // Save current ride with calculated fare
+    firebase.database().ref("rides").push({ ...newRide, fare: individualFare }).then(() => {
+      document.getElementById("result").innerText = "✅ Ride added successfully!";
+      document.getElementById("rideForm").reset();
+    }).catch(err => {
+      document.getElementById("result").innerText = "❌ Error: " + err.message;
+    });
+  });
+}

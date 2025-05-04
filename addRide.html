@@ -170,33 +170,50 @@
       loadMembers();
     };
 
-    document.getElementById("rideForm").addEventListener("submit", function (e) {
-      e.preventDefault();
+    
+document.getElementById("rideForm").addEventListener("submit", function (e) {
+  e.preventDefault();
 
-      const name = document.getElementById("name").value;
-      const date = document.getElementById("date").value;
-      const location = document.getElementById("location").value;
-      const tripType = document.getElementById("tripType").value;
-      const carTo = document.getElementById("carTo").value;
-      const carReturn = document.getElementById("carReturn").value;
+  const name = document.getElementById("name").value;
+  const date = document.getElementById("date").value;
+  const location = document.getElementById("location").value;
+  const tripType = document.getElementById("tripType").value;
+  const carTo = document.getElementById("carTo").value;
+  const carReturn = document.getElementById("carReturn").value;
 
-      let fare = 0;
-      if (location === "Mills") {
-        fare = tripType === "Round-trip" ? 8 : 4;
-      } else if (location === "Motel") {
-        fare = tripType === "Round-trip" ? 10 : 5;
-      }
+  let baseFare = 0;
+  if (location === "Mills" && tripType === "Round-trip") {
+    baseFare = 15; // Total car fare to split
+  } else if (location === "Mills") {
+    baseFare = 4; // One-way base
+  } else if (location === "Motel" && tripType === "Round-trip") {
+    baseFare = 10;
+  } else if (location === "Motel") {
+    baseFare = 5;
+  }
 
-      const rideData = { name, date, location, tripType, fare, carTo, carReturn };
-      firebase.database().ref("rides").push(rideData)
-        .then(() => {
-          document.getElementById("result").innerText = "✅ Ride added successfully!";
-          document.getElementById("rideForm").reset();
-        })
-        .catch(err => {
-          document.getElementById("result").innerText = "❌ Error: " + err.message;
-        });
+  const newRide = { name, date, location, tripType, carTo, carReturn, fare: baseFare };
+
+  if (location === "Mills" && tripType === "Round-trip") {
+    calculateSharedFareAndSaveRide(newRide); // New logic
+  } else {
+    firebase.database().ref("rides").push(newRide).then(() => {
+      document.getElementById("result").innerText = "✅ Ride added successfully!";
+      document.getElementById("rideForm").reset();
+    }).catch(err => {
+      document.getElementById("result").innerText = "❌ Error: " + err.message;
     });
+  }
+});
+
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-X6CGLDGYEZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-X6CGLDGYEZ');
   </script>
 </body>
 </html>

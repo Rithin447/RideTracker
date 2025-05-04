@@ -100,4 +100,4 @@ rithinsrinivas123@gmail.com
 
 ## License
 
-MIT License — feel free to use, improve, and share with credit.
+feel free to use, improve, and share with credit.
