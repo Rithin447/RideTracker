@@ -1,6 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="apple-touch-icon" sizes="180x180" href="carpoollogo/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="carpoollogo/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="carpoollogo/favicon-16x16.png">
+<link rel="manifest" href="carpoollogo/site.webmanifest">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B3411TW2DP"></script>
   <meta charset="UTF-8">
   <title>Admin Panel</title>
   <script>
@@ -20,9 +26,8 @@
       <a href="profileSummary.html">Profile Summary</a>
       <div id="adminNavLink" style="display: none;">
         <a href="rideManager.html">Ride Manager</a>
+        <a href="adminPanel.html">Admin Panel</a>
       </div>
-      
-      <a href="adminPanel.html" class="active">Admin Panel</a>
     </div>
     <div class="nav-right">
       <span id="welcomeMsg" style="margin-right: 20px;"></span>
@@ -40,8 +45,8 @@
     <p>This area is accessible only to administrators.</p>
 
     <div id="adminContent" style="margin-top: 20px;">
-      <h3>User Accounts (Coming Soon)</h3>
-      <p>Here you’ll be able to view and manage user registrations.</p>
+      <h3>User Accounts</h3>
+      <ul id="userList" style="list-style: none; padding-left: 0;"></ul>
 
       <h3>Activity Logs (Coming Soon)</h3>
       <p>Track who submitted which rides and when.</p>
@@ -50,6 +55,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="app.js"></script>
   <script>
     function toggleProfileMenu() {
@@ -69,10 +75,25 @@
         alert("Access denied. Admins only.");
         window.location.href = "index.html";
       }
-      if (localStorage.getItem("isAdmin") === "true") {
-  document.getElementById("adminNavLink").style.display = "block";
-}
 
+      if (isAdmin === "true") {
+        document.getElementById("adminNavLink").style.display = "block";
+
+        // Fetch and render user list
+        const userList = document.getElementById("userList");
+        firebase.database().ref("users").once("value").then(snapshot => {
+          snapshot.forEach(child => {
+            const data = child.val();
+            const userId = child.key;
+            const li = document.createElement("li");
+            li.innerHTML = `
+              ${data.firstName || 'Unknown'} (${data.email || 'No Email'})
+              <button onclick="deleteUser('${userId}')">Delete</button>
+            `;
+            userList.appendChild(li);
+          });
+        });
+      }
     };
   </script>
 </body>

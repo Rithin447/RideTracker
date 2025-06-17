@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="apple-touch-icon" sizes="180x180" href="carpoollogo/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="carpoollogo/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="carpoollogo/favicon-16x16.png">
+<link rel="manifest" href="carpoollogo/site.webmanifest">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B3411TW2DP"></script>
   <meta charset="UTF-8">
   <title>Add Ride</title>
   <script>
@@ -8,6 +13,40 @@
     if (!user) {
       window.location.href = "login.html";
     }
+
+    function loadDeletableMembers() {
+      const deleteSelect = document.getElementById("deletePerson");
+      deleteSelect.innerHTML = '<option value="">--Select Person--</option>';
+      firebase.database().ref("members").once("value").then(snapshot => {
+        snapshot.forEach(child => {
+          const option = document.createElement("option");
+          option.value = child.key;
+          option.textContent = child.val();
+          deleteSelect.appendChild(option);
+        });
+      });
+    }
+
+    function deletePerson() {
+      const selectedKey = document.getElementById("deletePerson").value;
+      if (!selectedKey) {
+        alert("Please select a person to delete.");
+        return;
+      }
+
+      if (confirm("Are you sure you want to delete this rider?")) {
+        firebase.database().ref("members/" + selectedKey).remove()
+          .then(() => {
+            document.getElementById("deleteStatus").innerText = "✅ Rider deleted successfully.";
+            loadMembers();
+            loadDeletableMembers();
+          })
+          .catch(error => {
+            document.getElementById("deleteStatus").innerText = "❌ Error: " + error.message;
+          });
+      }
+    }
+
   </script>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -96,6 +135,17 @@
     </form>
 
     <div id="result"></div>
+
+    <div id="deletePersonSection" style="margin-top: 40px;" class="form-group">
+      <h4>Delete a Rider</h4>
+      <label for="deletePerson">Select Person to Delete:</label>
+      <select id="deletePerson">
+        <option value="">--Select Person--</option>
+      </select>
+      <button type="button" class="btn" onclick="deletePerson()">Delete</button>
+      <p id="deleteStatus" style="margin-top: 10px;"></p>
+    </div>
+
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -157,6 +207,7 @@
     }
 
     window.onload = function () {
+      loadDeletableMembers();
       const initials = localStorage.getItem("userInitials");
       const firstName = localStorage.getItem("firstName");
       const isAdmin = localStorage.getItem("isAdmin");
@@ -206,14 +257,82 @@ document.getElementById("rideForm").addEventListener("submit", function (e) {
   }
 });
 
+
+    function loadDeletableMembers() {
+      const deleteSelect = document.getElementById("deletePerson");
+      deleteSelect.innerHTML = '<option value="">--Select Person--</option>';
+      firebase.database().ref("members").once("value").then(snapshot => {
+        snapshot.forEach(child => {
+          const option = document.createElement("option");
+          option.value = child.key;
+          option.textContent = child.val();
+          deleteSelect.appendChild(option);
+        });
+      });
+    }
+
+    function deletePerson() {
+      const selectedKey = document.getElementById("deletePerson").value;
+      if (!selectedKey) {
+        alert("Please select a person to delete.");
+        return;
+      }
+
+      if (confirm("Are you sure you want to delete this rider?")) {
+        firebase.database().ref("members/" + selectedKey).remove()
+          .then(() => {
+            document.getElementById("deleteStatus").innerText = "✅ Rider deleted successfully.";
+            loadMembers();
+            loadDeletableMembers();
+          })
+          .catch(error => {
+            document.getElementById("deleteStatus").innerText = "❌ Error: " + error.message;
+          });
+      }
+    }
+
   </script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-X6CGLDGYEZ"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B3411TW2DP"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
   
-    gtag('config', 'G-X6CGLDGYEZ');
+    gtag('config', 'G-B3411TW2DP');
+
+    function loadDeletableMembers() {
+      const deleteSelect = document.getElementById("deletePerson");
+      deleteSelect.innerHTML = '<option value="">--Select Person--</option>';
+      firebase.database().ref("members").once("value").then(snapshot => {
+        snapshot.forEach(child => {
+          const option = document.createElement("option");
+          option.value = child.key;
+          option.textContent = child.val();
+          deleteSelect.appendChild(option);
+        });
+      });
+    }
+
+    function deletePerson() {
+      const selectedKey = document.getElementById("deletePerson").value;
+      if (!selectedKey) {
+        alert("Please select a person to delete.");
+        return;
+      }
+
+      if (confirm("Are you sure you want to delete this rider?")) {
+        firebase.database().ref("members/" + selectedKey).remove()
+          .then(() => {
+            document.getElementById("deleteStatus").innerText = "✅ Rider deleted successfully.";
+            loadMembers();
+            loadDeletableMembers();
+          })
+          .catch(error => {
+            document.getElementById("deleteStatus").innerText = "❌ Error: " + error.message;
+          });
+      }
+    }
+
   </script>
 </body>
 </html>

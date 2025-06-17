@@ -71,11 +71,12 @@ if (loginForm) {
           alert("✅ Logged in as ADMIN");
           window.location.href = "adminPanel.html";
         } else {
+          alert("✅ Logged in successfully");
           window.location.href = "index.html";
         }
       })
       .catch(error => {
-        alert(error.message);
+        alert("Login failed: " + error.message);
       });
   });
 }
@@ -141,4 +142,18 @@ function calculateSharedFareAndSaveRide(newRide) {
       document.getElementById("result").innerText = "❌ Error: " + err.message;
     });
   });
+}
+
+//Delet User
+function deleteUser(userId) {
+  if (confirm("Are you sure you want to delete this user?")) {
+    firebase.database().ref("users/" + userId).remove()
+      .then(() => {
+        alert("User deleted successfully.");
+        location.reload(); // Refresh the page to reflect changes
+      })
+      .catch((error) => {
+        alert("Error deleting user: " + error.message);
+      });
+  }
 }

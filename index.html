@@ -1,8 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="apple-touch-icon" sizes="180x180" href="carpoollogo/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="carpoollogo/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="carpoollogo/favicon-16x16.png">
+<link rel="manifest" href="carpoollogo/site.webmanifest">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B3411TW2DP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-B3411TW2DP');
+  </script>
+  </script>
   <meta charset="UTF-8">
   <title>RideTracker - Home</title>
+
   <script>
     const user = localStorage.getItem("firstName");
     if (!user) {
@@ -20,6 +34,7 @@
       <a href="profileSummary.html">Profile Summary</a>
       <div id="adminNavLink" style="display: none;">
         <a href="rideManager.html">Ride Manager</a>
+        <a href="adminPanel.html">Admin Panel</a>
       </div>
       
     </div>
@@ -36,7 +51,7 @@
   
 
   <div class="container">
-    <h1>Welcome</h1>
+    <h1>Welcome Riders</h1>
     <p>This application helps you manage and track shared rides for your team with detailed logs and summaries.</p>
     <div id="loginButtonContainer" style="display: none;">
       <a href="login.html" class="btn">Login</a>
@@ -79,14 +94,7 @@ if (!isLoggedIn) {
       menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
   </script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-X6CGLDGYEZ"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
   
-    gtag('config', 'G-X6CGLDGYEZ');
-  </script>
   
   <style>
 
